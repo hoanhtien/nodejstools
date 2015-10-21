@@ -46,12 +46,14 @@ namespace Microsoft.Nodejs.Tests.UI {
         [HostType("VSTestHost")]
         public void BraceCompletionsBasic() {
             using (var solution = BasicProject.Generate().ToVs()) {
-                string folderName = NodejsFolderNode.AppendLabel("SomeFolder", FolderContentType.Node);
-                var server = solution.OpenItem("Require", folderName, "baz.js");
+                var optionsPage = NodejsTools.NodejsPackage.Instance.GeneralOptionsPage;
+                using (new NodejsOptionHolder(optionsPage, "ShowBrowserAndNodeLabels", false)) {
+                    var server = solution.OpenItem("Require", "SomeFolder", "baz.js");
 
-                // Test '('
-                Keyboard.Type("(");
-                server.WaitForText("()");
+                    // Test '('
+                    Keyboard.Type("(");
+                    server.WaitForText("()");
+                }
             }
         }
 
@@ -62,35 +64,37 @@ namespace Microsoft.Nodejs.Tests.UI {
         [HostType("VSTestHost")]
         public void BraceCompletionsE2E() {
             using (var solution = BasicProject.Generate().ToVs()) {
-                string folderName = NodejsFolderNode.AppendLabel("SomeFolder", FolderContentType.Node);
-                var server = solution.OpenItem("Require", folderName, "baz.js");
+                var optionsPage = NodejsTools.NodejsPackage.Instance.GeneralOptionsPage;
+                using (new NodejsOptionHolder(optionsPage, "ShowBrowserAndNodeLabels", false)) {
+                    var server = solution.OpenItem("Require", "SomeFolder", "baz.js");
 
-                // Test '('
-                Keyboard.Type("require(");
-                server.WaitForText("require()");
+                    // Test '('
+                    Keyboard.Type("require(");
+                    server.WaitForText("require()");
 
-                // Test '"'
-                Keyboard.Type("\"");
-                server.WaitForText("require(\"\")");
+                    // Test '"'
+                    Keyboard.Type("\"");
+                    server.WaitForText("require(\"\")");
 
-                // Test step over
-                Keyboard.Type("\")");
-                server.WaitForText("require(\"\")");
+                    // Test step over
+                    Keyboard.Type("\")");
+                    server.WaitForText("require(\"\")");
 
-                // Complete this line and attempt '{'
-                Keyboard.Type(";\nfunction a(b) {");
-                server.WaitForText("require(\"\");\r\nfunction a(b) {}");
+                    // Complete this line and attempt '{'
+                    Keyboard.Type(";\nfunction a(b) {");
+                    server.WaitForText("require(\"\");\r\nfunction a(b) {}");
 
-                // Verify both nested completions and '[' as well as '''
-                Keyboard.Type("\nvar arr = ['elem\\'ent1', 'element2");
-                server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2']\r\n}");
+                    // Verify both nested completions and '[' as well as '''
+                    Keyboard.Type("\nvar arr = ['elem\\'ent1', 'element2");
+                    server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2']\r\n}");
 
-                Keyboard.Type("'];");
-                server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2'];\r\n}");
+                    Keyboard.Type("'];");
+                    server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2'];\r\n}");
 
-                // Verify typeover
-                Keyboard.Type("\n}");
-                server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2'];\r\n}");
+                    // Verify typeover
+                    Keyboard.Type("\n}");
+                    server.WaitForText("require(\"\");\r\nfunction a(b) {\r\n    var arr = ['elem\\'ent1', 'element2'];\r\n}");
+                }
             }
         }
 
@@ -101,19 +105,21 @@ namespace Microsoft.Nodejs.Tests.UI {
         [HostType("VSTestHost")]
         public void BraceCompletionDoesNotOccurInCommentsOrLiterals() {
             using (var solution = BasicProject.Generate().ToVs()) {
-                string folderName = NodejsFolderNode.AppendLabel("SomeFolder", FolderContentType.Node);
-                var server = solution.OpenItem("Require", folderName, "baz.js");
+                var optionsPage = NodejsTools.NodejsPackage.Instance.GeneralOptionsPage;
+                using (new NodejsOptionHolder(optionsPage, "ShowBrowserAndNodeLabels", false)) {
+                    var server = solution.OpenItem("Require", "SomeFolder", "baz.js");
 
-                // Verify that a comment gets no completions brace causes nothing if it has no start.
-                Keyboard.Type("// '");
-                server.WaitForText("// '");
+                    // Verify that a comment gets no completions brace causes nothing if it has no start.
+                    Keyboard.Type("// '");
+                    server.WaitForText("// '");
 
-                // Verify that inside strings no extra completions happen
-                Keyboard.Type("\nconsole.log(\"'");
-                server.WaitForText("// '\r\nconsole.log(\"'\")");
+                    // Verify that inside strings no extra completions happen
+                    Keyboard.Type("\nconsole.log(\"'");
+                    server.WaitForText("// '\r\nconsole.log(\"'\")");
 
-                Keyboard.Type("\", '{");
-                server.WaitForText("// '\r\nconsole.log(\"'\", '{')");
+                    Keyboard.Type("\", '{");
+                    server.WaitForText("// '\r\nconsole.log(\"'\", '{')");
+                }
             }
         }
 
@@ -124,16 +130,18 @@ namespace Microsoft.Nodejs.Tests.UI {
         [HostType("VSTestHost")]
         public void BraceCompletionTerminatesOnEscapedQuoteInLiteralAndDoesntStartAgain() {
             using (var solution = BasicProject.Generate().ToVs()) {
-                string folderName = NodejsFolderNode.AppendLabel("SomeFolder", FolderContentType.Node);
-                var server = solution.OpenItem("Require", folderName, "baz.js");
+                var optionsPage = NodejsTools.NodejsPackage.Instance.GeneralOptionsPage;
+                using (new NodejsOptionHolder(optionsPage, "ShowBrowserAndNodeLabels", false)) {
+                    var server = solution.OpenItem("Require", "SomeFolder", "baz.js");
 
-                // Verify that when adding an escaped double quote to a literal that we don't try to start
-                // a new brace completion on close of the string literal.
-                Keyboard.Type("var a = \"some\\\"text");
-                server.WaitForText("var a = \"some\\\"text");
+                    // Verify that when adding an escaped double quote to a literal that we don't try to start
+                    // a new brace completion on close of the string literal.
+                    Keyboard.Type("var a = \"some\\\"text");
+                    server.WaitForText("var a = \"some\\\"text");
 
-                Keyboard.Type("\"");
-                server.WaitForText("var a = \"some\\\"text\"");
+                    Keyboard.Type("\"");
+                    server.WaitForText("var a = \"some\\\"text\"");
+                }
             }
         }
 
